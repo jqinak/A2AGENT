@@ -405,14 +405,14 @@ def fetch_video(ele: Dict[str, Any], image_patch_size: int = 14, return_video_sa
     image_factor = image_patch_size * SPATIAL_MERGE_SIZE
     VIDEO_FRAME_MIN_PIXELS = VIDEO_MIN_TOKEN_NUM * image_factor * image_factor
     VIDEO_FRAME_MAX_PIXELS = VIDEO_MAX_TOKEN_NUM * image_factor * image_factor
-    print("*"*30)
+    # print("*"*30)
     print(f"[qwen-vl-utils]: ele[\"video\"]={ele['video']}")
-    print(f"ele type: {type(ele)}")
-    print(f"ele keys: {ele.keys()}")
-    print(f"ele['video'] type: {type(ele['video'])}")
-    print(f"ele content: {ele}")
-    print(isinstance(ele["video"], str))
-    print("*"*30)
+    # print(f"ele type: {type(ele)}")
+    # print(f"ele keys: {ele.keys()}")
+    # print(f"ele['video'] type: {type(ele['video'])}")
+    # print(f"ele content: {ele}")
+    # print(isinstance(ele["video"], str))
+    # print("*"*30)
     if isinstance(ele["video"], str):
         video_reader_backend = get_video_reader_backend()
         try:

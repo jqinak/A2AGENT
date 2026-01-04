@@ -44,7 +44,7 @@ python3 -m a2agent.trainer.main_ppo \
     data.return_raw_chat=True \
     data.return_multi_modal_inputs=True \
     data.filter_overlong_prompts=True \
-    data.filter_overlong_prompts_workers=128 \
+    data.filter_overlong_prompts_workers=512 \
     data.truncation=left \
     data.image_key=images \
     data.video_key=videos \

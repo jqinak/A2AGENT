@@ -388,7 +388,7 @@ def create_rl_dataset(data_paths, data_config, tokenizer, processor, is_train=Tr
     """
     from torch.utils.data import Dataset
 
-    from verl.utils.dataset.rl_dataset import RLHFDataset
+    from a2agent.data.rl_dataset import RLHFDataset
 
     # Check if a custom dataset class is specified in the data configuration
     # and if the path to the custom class is provided

@@ -110,7 +110,13 @@ All your output should be in <think></think>, <answer></answer> or <code></code>
                     },
                 ],
                 
-                "videos": ["file:///project/peilab/qjl/CODE/DATA/videos/{video_path}"],
+                "videos": [{
+                    "type": "video",
+                    "video": f"/project/peilab/qjl/CODE/DATA/videos/{video_path}",
+                    "fps": 2,
+                    "min_frames": 1,
+                    "max_frames": 128
+                }],
                 "reward_model": {"style": "rule", "ground_truth": answer},
                 "extra_info": {
                     "split": split,
