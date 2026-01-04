@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: a2po
+Version: 0.1.0
+Summary: A Python package for A2AGENT
+Home-page: 
+Author: Jialong Qin (jqinak@connect.ust.hk)
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Dynamic: author
+Dynamic: classifier
+Dynamic: description-content-type
+Dynamic: requires-python
+Dynamic: summary

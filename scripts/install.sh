@@ -1,0 +1,3 @@
+PROJECT_DIR="$(pwd)"
+
+cd PROJECT_DIR
