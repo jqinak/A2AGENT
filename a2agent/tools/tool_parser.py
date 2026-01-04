@@ -24,7 +24,8 @@ from verl.utils.rollout_trace import rollout_trace_op
 
 logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
-
+import autopep8
+import textwrap
 
 class FunctionCall(BaseModel):
     arguments: str
@@ -159,3 +160,55 @@ class GptOssToolParser(ToolParser):
         content = regex.sub(self.tool_call_pattern, "", text)
 
         return content, function_calls
+
+
+
+@ToolParser.register("multimodalcode")
+class MultiModalCodeToolParser(ToolParser):
+
+    def __init__(self, tokenizer) -> None:
+        super().__init__(tokenizer)
+
+        self.tool_call_start_token: str = "<code>"
+        self.tool_call_end_token: str = "</code>"
+        self.tool_call_regex = regex.compile(r"<code>\s*```python\s*(.*?)```\s*</code>", regex.DOTALL)
+
+    @rollout_trace_op
+    async def extract_tool_calls(self, responses_ids: list[int]) -> tuple[str, list[FunctionCall]]:
+        loop = get_event_loop()
+        text = await loop.run_in_executor(None, self.tokenizer.decode, responses_ids)
+        if self.tool_call_start_token not in text or self.tool_call_end_token not in text:
+            
+            return text, []
+        function_calls = []
+        matches = self.tool_call_regex.findall(text)
+        try:
+            if matches:
+                code_content = matches.group(1).strip()
+                function_calls.append(FunctionCall(name="multimodalcode", arguments=code_content))
+        except Exception as e:
+                logger.error(f"Failed to decode tool call: {e}, matches = {matches}")   
+              
+        # remaing text exclude tool call tokens
+        content = self.tool_call_regex.sub("", text)
+
+        return content, function_calls
+    
+    def fix_python_indentation(code):
+        try:
+            lines = [line.strip() for line in code.split('\n') if line.strip()]
+            fixed_lines = []
+            indent = 0
+            for line in lines:
+                if any(line.startswith(kw) for kw in ['except', 'elif', 'else', 'finally']):
+                    indent = max(0, indent - 1)
+                fixed_lines.append('    ' * indent + line)
+                if line.endswith(':'):
+                    indent += 1
+            temp_code = '\n'.join(fixed_lines)
+            dedented_code = textwrap.dedent(temp_code).strip()
+            formatted_code = autopep8.fix_code(dedented_code, options={'aggressive': 2})
+            return formatted_code
+        except Exception as e:
+            print ('Code Format Error:', e)
+            return code

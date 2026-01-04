@@ -24,15 +24,17 @@ from omegaconf import OmegaConf
 
 from verl.experimental.dataset.sampler import AbstractSampler
 from verl.trainer.constants_ppo import get_ppo_ray_runtime_env
-from verl.trainer.ppo.ray_trainer import RayPPOTrainer
 from verl.trainer.ppo.reward import load_reward_manager
 from verl.trainer.ppo.utils import need_critic, need_reference_policy
 from verl.utils.config import validate_config
 from verl.utils.device import auto_set_ascend_device_name, is_cuda_available
 from verl.utils.import_utils import load_extern_object
 
+import verl.trainer.config as cfg
 
-@hydra.main(config_path="config", config_name="ppo_trainer", version_base=None)
+from a2agent.trainer.ray_trainer import RayPPOTrainer
+
+@hydra.main(config_path=os.path.dirname(cfg.__file__), config_name="ppo_trainer", version_base=None)
 def main(config):
     """Main entry point for PPO training with Hydra configuration management.
 

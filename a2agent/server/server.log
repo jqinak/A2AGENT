@@ -1,0 +1,54 @@
+nohup: ignoring input
+INFO:     Started server process [3347536]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+--- Logging error ---
+Traceback (most recent call last):
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/logging/__init__.py", line 1100, in emit
+    msg = self.format(record)
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/logging/__init__.py", line 943, in format
+    return fmt.format(record)
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/logging/__init__.py", line 678, in format
+    record.message = record.getMessage()
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/logging/__init__.py", line 368, in getMessage
+    msg = msg % self.args
+TypeError: %d format: a real number is required, not str
+Call stack:
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/project/peilab/qjl/A2AGENT/a2agent/server/async_sandbox_server.py", line 496, in <module>
+    main()
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/_internal/hydra.py", line 119, in run
+    ret = run_job(
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+  File "/project/peilab/qjl/A2AGENT/a2agent/server/async_sandbox_server.py", line 488, in main
+    uvicorn.run(
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/main.py", line 593, in run
+    server.run()
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/_compat.py", line 60, in asyncio_run
+    return loop.run_until_complete(main)
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/server.py", line 86, in _serve
+    await self.startup(sockets=sockets)
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/server.py", line 181, in startup
+    self._log_started_message(listeners)
+  File "/home/hzhangex/anaconda3/envs/a2po/lib/python3.10/site-packages/uvicorn/server.py", line 216, in _log_started_message
+    logger.info(
+Message: 'Uvicorn running on %s://%s:%d (Press CTRL+C to quit)'
+Arguments: ('http', '0.0.0.0', '')

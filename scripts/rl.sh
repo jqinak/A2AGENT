@@ -8,11 +8,11 @@ export HF_HOME=/project/peilab/qjl/tmp
 export TMPDIR=/project/peilab/qjl/tmp
 export RAY_TMPDIR=/project/peilab/qjl/tmp
 
-cd /project/peilab/qjl/A2Agent
+cd /project/peilab/qjl/A2AGENT
 
 PROJECT_DIR="$(pwd)"
 DATA_DIR=/project/peilab/qjl/CODE/DATA
-DATASET=a2vl
+DATASET=a2agent_rl
 
 PORT=16259
 
@@ -28,7 +28,7 @@ MODELPATH=$PROJECT_DIR/a2agent/model/Qwen3-VL-4B-Instruct
 
 nohup python -m a2agent.server.async_sandbox_server ALLOWED_PORT=$PORT > $PROJECT_DIR/a2agent/server/server.log 2>&1 &
 
-NAME=qwen3_4b_a2agent_test3
+NAME=qwen3_4b_a2agent_test0
 PROJECT=a2agent_async_rl
 
 
@@ -50,6 +50,7 @@ python3 -m a2agent.trainer.main_ppo \
     data.video_key=videos \
     custom_reward_function.path=pkg://a2agent.reward.reward_a2po \
     custom_reward_function.name=compute_score \
+    actor_rollout_ref.rollout.multi_turn.enable=True \
     actor_rollout_ref.rollout.multi_turn.format=multimodalcode \
     actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent \
     actor_rollout_ref.rollout.multi_turn.max_user_turns=5 \

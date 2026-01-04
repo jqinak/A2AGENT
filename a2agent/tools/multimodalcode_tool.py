@@ -15,6 +15,7 @@
 import requests
 import logging
 import os
+import json
 import threading
 from contextlib import ExitStack
 from enum import Enum
@@ -29,8 +30,8 @@ import ray
 import ray.actor
 from qwen_vl_utils import fetch_image, fetch_video
 
-from .base_tool import BaseTool
-from .schemas import OpenAIFunctionToolSchema, ToolResponse
+from verl.tools.base_tool import BaseTool
+from verl.tools.schemas import OpenAIFunctionToolSchema, ToolResponse
 
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
@@ -88,63 +89,44 @@ class MultiModalCode_tool(BaseTool):
         super().__init__(config, tool_schema)
         self._instance_dict = {}
         # Worker and rate limiting configuration
-        self.timeout = config.get("timeout", 30)
-        self.code_sandbox_url = "http://0.0.0.0:1234/"
+        self.timeout = config.get("timeout", 60)
+        self.code_sandbox_url = config.get("code_sandbox_url", "http://0.0.0.0:16259")
+        self.headers = {"Content-Type": "application/json"}
         logger.info(f"Initialized multimodalcode_tool with config: {config}")
 
 
     def get_openai_tool_schema(self) -> OpenAIFunctionToolSchema:
         return self.tool_schema
 
-    async def create(self, instance_id: Optional[str] = None, **kwargs) -> tuple[str, ToolResponse]:
+    async def create(self, instance_id: str, parameters: dict[str, Any], **kwargs) -> tuple[str, ToolResponse]:
         """
-        Creates a new instance for image zoom-in tool.
-
-        This method initializes a new session for an image, which can then be used
-        for operations like zooming. It fetches the image from various sources
-        and stores it internally.
-
-        Args:
-            instance_id: An optional unique identifier for the instance. If not
-                provided, a new UUID will be generated.
-            **kwargs: Should contain 'image' key with image data, or 'create_kwargs'
-                containing {'image': image_data}. Image can be one of the following:
-                - A PIL.Image.Image object.
-                - A string containing an HTTP or HTTPS URL.
-                - A string containing a local file path.
-                - A string containing a file URI (e.g., "file:///path/to/image.jpg").
-                - A string containing a base64-encoded image in the format of "data:image/jpeg;base64,..."
-
+        Creates a new instance for multimodal code server.
         Returns:
             Tuple of (instance_id, ToolResponse)
         """
-        if instance_id is None:
-            instance_id = str(uuid4())
 
-        # Handle create_kwargs parameter if passed
-        create_kwargs = kwargs.get("create_kwargs", {})
-        if create_kwargs:
-            kwargs.update(create_kwargs)
+        try:
+            code = kwargs.get("code", "")
+            if len(code)==0:
+                logger.error(f"[DEBUG] Code为空!")
+            payload = {
+                "code": code,
+                "timeout": self.timeout + 2
+            }
+            response = requests.post(self.code_sandbox_url, headers=self.code_sandbox_url, data=json.dumps(payload))
+            # {
+            # "task_id":"5e44a605-f85d-427e-9db8-90d2c72f96ba",
+            # "status":"pending",
+            # "message":"任务已提交，正在处理",
+            # "created_at":1767551607.5667443,
+            # "check_status_url":"/task/5e44a605-f85d-427e-9db8-90d2c72f96ba/status",
+            # "get_result_url":"/task/5e44a605-f85d-427e-9db8-90d2c72f96ba/result"
+            # }
+            instance_id = self.code_sandbox_url + response["get_result_url"]
+            logger.info(f"[DEBUG] 工具发送Code成功, instance_id = {instance_id}, response = {response}, payload={payload}")
+        except Exception as e:
+            logger.error(f"[DEBUG] 工具发送Code错误:{e}")
 
-        # Get image from kwargs
-        image = kwargs.get("image")
-
-        video = kwargs.get("video")
-
-        if image:
-            img = fetch_image({"image": image})
-        elif video:
-            video = fetch_video({"video": video})
-        else:
-            raise ValueError("Missing required 'image' or 'video' parameter in kwargs")
-
-        self._instance_dict[instance_id] = {
-            "image": img,
-            "video": video,
-            "type": "image" if image else "video",
-            "response": "",
-            "reward": 0.0,
-        }
 
         return instance_id, ToolResponse()
 
@@ -230,6 +212,7 @@ class MultiModalCode_tool(BaseTool):
             stdout = resjson['stdout']
             stderr = resjson['stderr']
             tool_response_text = f"[Sand_Box_Server]: {{success:{resjson['success']} stdout:{stdout}, stderr:{stderr}}}"
+            logger.info(f"[DEBUG] tool_response_text={tool_response_text}")
             tmp_path = resjson['tmp_path']
             image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp'}
             video_extensions = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.m4v'}
@@ -249,7 +232,7 @@ class MultiModalCode_tool(BaseTool):
 
         except Exception as err:
             tool_response_text = f' [ERROR code] Request to Sand_Box_Server failed: {err}'
-            logging.error(tool_response_text)
+            logger.error(f"[DEBUG] tool_response_text={tool_response_text}")
             return ToolResponse(text=tool_response_text, image=image_list, video=video_list), 0.0 if resjson['success'] else -0.05, {"success": resjson['success']}
 
         

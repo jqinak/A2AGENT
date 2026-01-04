@@ -14,6 +14,8 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
     返回:
         total_score: 总分（格式奖励 + 答案奖励）
     """
+    print(f"[DEBUG] compute_score  data_source, solution_str, ground_truth, extra_info:{data_source, solution_str, ground_truth, extra_info}")
+    
     # 1. 定义格式匹配的正则表达式
     pattern = r'^.*?(?:<think>.*?</think><answer>.*?</answer><code>.*?</code>)*<think>.*?</think><answer>.*?</answer>$'
     
