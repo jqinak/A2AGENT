@@ -34,11 +34,11 @@ from verl.tools.base_tool import BaseTool
 from verl.tools.schemas import OpenAIFunctionToolSchema, ToolResponse
 
 logger = logging.getLogger(__name__)
-logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
+logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "INFO"))
 
 T = TypeVar("T")
 
-class MultiModalCode_tool(BaseTool):
+class MultiModalCode_tool:
     """A tool for zooming in on an image by cropping it based on a bounding box.
 
     This tool provides a zoom-in functionality by cropping a region from an image,
@@ -54,7 +54,7 @@ class MultiModalCode_tool(BaseTool):
 
     MIN_DIMENSION = 28
 
-    def __init__(self, config: dict, tool_schema: OpenAIFunctionToolSchema):
+    def __init__(self, config: dict):
         """
         _tool_schema = OpenAIFunctionToolSchema.model_validate({
             "type": "function",
@@ -90,8 +90,10 @@ class MultiModalCode_tool(BaseTool):
         self._instance_dict = {}
         # Worker and rate limiting configuration
         self.timeout = config.get("timeout", 60)
+        self.name = "multimodalcode"
         self.code_sandbox_url = config.get("code_sandbox_url", "http://0.0.0.0:16259")
         self.headers = {"Content-Type": "application/json"}
+        logger.info("[MultiModalCode_tool] 实例化MultiModalCode_tool")
         logger.info(f"Initialized multimodalcode_tool with config: {config}")
 
 
@@ -104,6 +106,7 @@ class MultiModalCode_tool(BaseTool):
         Returns:
             Tuple of (instance_id, ToolResponse)
         """
+        logger.info(f"[MultiModalCode_Tool] 进入工具create, kwargs={kwargs}")
 
         try:
             code = kwargs.get("code", "")
@@ -227,13 +230,13 @@ class MultiModalCode_tool(BaseTool):
                         image_list.append(file_path)
                     elif ext in video_extensions:
                         video_list.append(file_path)
-            return ToolResponse(text=tool_response_text, image=image_list, video=video_list), 0.0 if resjson['success'] else -0.05, {"success": resjson['success']}
+            return ToolResponse(text=tool_response_text, image=image_list, video=video_list),   0.0 if resjson['success'] else -0.05,  {"success": resjson['success']}
 # return ToolResponse(text=tool_response_text, image=image_list if image_list else None, video=video_list if video_list else None), 0.0 if resjson['success'] else -0.05, {"success": resjson['success']}
 
         except Exception as err:
             tool_response_text = f' [ERROR code] Request to Sand_Box_Server failed: {err}'
             logger.error(f"[DEBUG] tool_response_text={tool_response_text}")
-            return ToolResponse(text=tool_response_text, image=image_list, video=video_list), 0.0 if resjson['success'] else -0.05, {"success": resjson['success']}
+            return ToolResponse(text=tool_response_text, image=image_list, video=video_list),   0.0 if resjson['success'] else -0.05,    {"success": resjson['success']}
 
         
     async def release(self, instance_id: str, **kwargs) -> None:

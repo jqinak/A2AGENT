@@ -300,6 +300,8 @@ async def execute_code(request: CodeExecutionRequest, background_tasks: Backgrou
     提交代码执行任务（异步）
     """
     # 生成任务ID
+    print(f"[logging] 收到异步执行请求: request =  {request}")
+
     task_id = str(uuid.uuid4())
     
     # 创建任务记录
@@ -307,7 +309,7 @@ async def execute_code(request: CodeExecutionRequest, background_tasks: Backgrou
         "task_id": task_id,
         "status": "pending",
         "created_at": time.time(),
-        "code": request.code[:100] + "..." if len(request.code) > 100 else request.code
+        "code": request.code
     }
     
     # 在后台执行任务
@@ -352,11 +354,14 @@ async def get_task_result(task_id: str):
     """
     获取任务结果
     """
+    
     if task_id not in execution_tasks:
         raise HTTPException(status_code=404, detail="任务不存在")
     
     task = execution_tasks[task_id]
-    
+
+    print(f"[logging] 返回任务结果: task =  {task}")
+
     if task['status'] == "pending":
         raise HTTPException(status_code=202, detail="任务还在处理中")
     
@@ -385,6 +390,8 @@ async def execute_code_sync(request: CodeExecutionRequest):
     同步执行代码（兼容旧接口）
     """
     # 创建临时目录
+    print(f"[logging] 收到同步执行请求: request =  {request}")
+
     temp_dir = tempfile.mkdtemp(dir=BASE_DIR)
     
     try:

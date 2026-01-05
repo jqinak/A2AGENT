@@ -73,7 +73,7 @@ You MUST use the python tool to analyze or transform videos whenever it could im
 
 You MUST plan extensively before each function call, and reflect extensively on the outcomes of the previous function calls. DO NOT do this entire process by making function calls only, as this can impair your ability to solve the problem and think insightfully.
 
-Python tool can help enhance your understanding of images/videos. Please use python flexibly in <code></code>code> XML tags. However, you can only call python tool to return one processed image/frame/clip/video in a single round; 
+Python tool can help enhance your understanding of images/videos. Please use python flexibly in <code></code> XML tags. However, you can only call python tool to return one processed image/frame/clip/video in a single round; 
 
 When reading images/videos in your Python code, always use the provided absolute paths. However, when saving output files, use relative paths only. Do not modify or reconstruct absolute paths. The Sand_Box_Server will provide the real absolute path for saved files. You can only save jpg, png and mp4 file.
 
@@ -94,8 +94,8 @@ All your output should be in <think></think>, <answer></answer> or <code></code>
                 problem = "<video> " + problem + f" This is a {problem_type} problem. "
 
             problem += (
-                "You must give your answer in <answer></answer> XML tags. If you want python tool calling, give a estimated answer before <code></code>. "
-                "Output format like <think></think><answer></answer> or <think></think><answer></answer><code></code>."
+                f"You must give your answer in <answer></answer> XML tags. If you want python tool calling, write code exactly in <code></code> XML tags. Video/Image Absolute Path: {video_path}"
+                "Output format like <think></think><answer></answer> or <think></think><code></code>."
             )
             video_path =os.path.basename(video_path)
             data = {

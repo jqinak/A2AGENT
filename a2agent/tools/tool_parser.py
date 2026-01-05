@@ -163,8 +163,8 @@ class GptOssToolParser(ToolParser):
 
 
 
-@ToolParser.register("multimodalcode")
-class MultiModalCodeToolParser(ToolParser):
+# @ToolParser.register("multimodalcode")
+class MultiModalCodeToolParser:
 
     def __init__(self, tokenizer) -> None:
         super().__init__(tokenizer)
@@ -182,13 +182,20 @@ class MultiModalCodeToolParser(ToolParser):
             return text, []
         function_calls = []
         matches = self.tool_call_regex.findall(text)
+        if len(matches):
+            logger.info(f"[DEBUG] multimodalcode tool_parser: 检测到调用代码工具 matches = {matches}")
+        else: 
+            logger.info(f"[DEBUG] multimodalcode tool_parser: 未检测检测到调用代码工具")
         try:
             if matches:
-                code_content = matches.group(1).strip()
+                code_content = matches[-1].strip()
                 function_calls.append(FunctionCall(name="multimodalcode", arguments=code_content))
+                logger.info(f"[DEBUG] multimodalcode tool_parser: code_content = {code_content}")
         except Exception as e:
                 logger.error(f"Failed to decode tool call: {e}, matches = {matches}")   
-              
+        
+        # TODO 验证多轮Rollout, 正常情况下应注释掉
+        function_calls.append(FunctionCall(name="multimodalcode", arguments="print(1+1)"))
         # remaing text exclude tool call tokens
         content = self.tool_call_regex.sub("", text)
 
@@ -210,5 +217,5 @@ class MultiModalCodeToolParser(ToolParser):
             formatted_code = autopep8.fix_code(dedented_code, options={'aggressive': 2})
             return formatted_code
         except Exception as e:
-            print ('Code Format Error:', e)
+            logger.info ('Code Format Error:', e)
             return code

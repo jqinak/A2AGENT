@@ -48,7 +48,7 @@ from verl.utils.transferqueue_utils import tqbridge
 from verl.workers.rollout.replica import TokenOutput, get_rollout_replica_class
 
 logger = logging.getLogger(__file__)
-logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "WARN"))
+logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "INFO"))
 
 
 class AsyncLLMServerManager:
@@ -323,6 +323,7 @@ class AgentLoopWorkerBase:
             responses:     |<- LLM generation ->|<- tool_calls ->|<- LLM generation ->|<- padding ->|
             response_mask: | 1, 1, 1, ..., 1, 1 | 0, 0, .., 0, 0 | 1, 1, 1, ..., 1, 1 | 0, 0, ..., 0|
         """
+        logger.info("[AgentLoopWorkerBase] generate_sequences")
         config = self.config.actor_rollout_ref.rollout
         sampling_params = dict(
             temperature=config.temperature,
@@ -370,17 +371,20 @@ class AgentLoopWorkerBase:
         for i in range(len(batch)):
             trace_this_sample = i in traced_indices
             kwargs = {k: v[i] for k, v in batch.non_tensor_batch.items()}
+            logger.info("[AgentLoopWorkerBase] generate_sequences self._run_agent_loop")
             tasks.append(
                 asyncio.create_task(
                     self._run_agent_loop(sampling_params, trajectory_info[i], trace=trace_this_sample, **kwargs)
                 )
             )
         outputs = await asyncio.gather(*tasks)
-
+        logger.info("[AgentLoopWorkerBase] self._postprocess(outputs)")
         output = self._postprocess(outputs)
 
         return output
 
+
+    # 入口
     async def _run_agent_loop(
         self,
         sampling_params: dict[str, Any],
@@ -390,6 +394,7 @@ class AgentLoopWorkerBase:
         trace: bool = True,
         **kwargs,
     ) -> _InternalAgentLoopOutput:
+        logger.info("[AgentLoopWorkerBase] 成功进入_run_agent_loop")
         with rollout_trace_attr(
             step=trajectory["step"],
             sample_index=trajectory["sample_index"],
@@ -398,18 +403,30 @@ class AgentLoopWorkerBase:
             name="agent_loop",
             trace=trace,
         ):
+            logger.info(f"[AgentLoopWorkerBase] _run_agent_loop, agent_name={agent_name}, _agent_loop_registry={_agent_loop_registry}")
             assert agent_name in _agent_loop_registry, (
                 f"Agent loop {agent_name} not registered, registered agent loops: {_agent_loop_registry.keys()}"
             )
 
+            # 实例化具体的AgentLoop类来进程生成的位置 
+            # 修改
             agent_loop_config = _agent_loop_registry[agent_name]
-            agent_loop = hydra.utils.instantiate(
+            from a2agent.rollout.tool_agent_loop import ToolAgentLoop
+            logger.info("[AgentLoopWorkerBase] 实例化ToolAgentLoop")
+            agent_loop = ToolAgentLoop(
                 config=agent_loop_config,
                 trainer_config=DictConfigWrap(config=self.config),
                 server_manager=self.server_manager,
                 tokenizer=self.tokenizer,
                 processor=self.processor,
             )
+            # agent_loop = hydra.utils.instantiate(
+            #     config=agent_loop_config,
+            #     trainer_config=DictConfigWrap(config=self.config),
+            #     server_manager=self.server_manager,
+            #     tokenizer=self.tokenizer,
+            #     processor=self.processor,
+            # )
             output: AgentLoopOutput = await agent_loop.run(sampling_params, **kwargs)
             return await self._agent_loop_postprocess(output, **kwargs)
 
@@ -769,7 +786,7 @@ class AgentLoopManager:
         self.server_handles = [server._server_handle for server in self.rollout_replicas]
         self.server_addresses = [server._server_address for server in self.rollout_replicas]
 
-        print(f"AgentLoopManager: {self.server_addresses}")
+        logger.info(f"[AgentLoopManager] {self.server_addresses}")
 
         # Update Prometheus configuration with server addresses
         if rollout_config.prometheus.enable:
@@ -793,6 +810,7 @@ class AgentLoopManager:
                     ),
                 ).remote(self.config, self.server_handles, self.reward_router_address)
             )
+        logger.info(f"[AgentLoopManager]  _init_agent_loop_workers num_workers={num_workers}, self.config={self.config} ")
 
     def generate_sequences(self, prompts: DataProto) -> DataProto:
         """Split input batch and dispatch to agent loop workers.
@@ -811,6 +829,7 @@ class AgentLoopManager:
             self.reward_model_manager.wake_up()
 
         chunkes = prompts.chunk(len(self.agent_loop_workers))
+        # logger.info(f"[AgentLoopManager]  generate_sequences chunkes={chunkes} ")
         outputs = ray.get(
             [
                 worker.generate_sequences.remote(chunk)

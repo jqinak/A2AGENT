@@ -14,11 +14,10 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
     返回:
         total_score: 总分（格式奖励 + 答案奖励）
     """
-    print(f"[DEBUG] compute_score  data_source, solution_str, ground_truth, extra_info:{data_source, solution_str, ground_truth, extra_info}")
+    # print(f"[DEBUG] compute_score  data_source, solution_str, ground_truth, extra_info:{data_source, solution_str, ground_truth, extra_info}")
     
     # 1. 定义格式匹配的正则表达式
-    pattern = r'^.*?(?:<think>.*?</think><answer>.*?</answer><code>.*?</code>)*<think>.*?</think><answer>.*?</answer>$'
-    
+    pattern = r'^(?:(?:<think>(?:(?!</?think>)[\s\S])*?</think>)(?:<estimate>(?:(?!</?estimate>)[\s\S])*?</estimate>)?(?:<code>(?:(?!</?code>)[\s\S])*?</code>))*?(?:<think>(?:(?!</?think>)[\s\S])*?</think>)(?:<answer>(?:(?!</?answer>)[\s\S])*?</answer>)$'
     # 2. 计算格式奖励（最高10分）
     format_reward = 0
     if re.match(pattern, solution_str, re.DOTALL):
@@ -27,11 +26,12 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
         # if re.search(r'<code>.*?</code>', solution_str):
             # format_reward += 2  # 额外奖励2分
     else:
-        # 部分匹配尝试：至少以think-answer结尾
-        if re.search(r'<think>.*?</think><answer>.*?</answer>$', solution_str, re.DOTALL):
-            format_reward = 1  # 部分格式正确
-        elif re.search(r'<answer>.*?</answer>$', solution_str, re.DOTALL):
-            format_reward = 0.5
+        format_reward = 0
+        # # 部分匹配尝试：至少以think-answer结尾
+        # if re.search(r'<think>.*?</think><answer>.*?</answer>$', solution_str, re.DOTALL):
+        #     format_reward = 1  # 部分格式正确
+        # elif re.search(r'<answer>.*?</answer>$', solution_str, re.DOTALL):
+        #     format_reward = 0.5
     
     # 3. 处理ground_truth_clean
     ground_truth_clean = str(ground_truth)
@@ -50,7 +50,7 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
     
     if problem_type == "multichoice":
         # 选择题：检查solution是否包含ground_truth_clean
-        if ground_truth_clean.lower() in solution_clean.lower():
+        if ground_truth_clean.lower() == solution_clean[0].lower():
             answer_reward = 1 # 选择题完全正确得满分
         else:
             answer_reward = 0   # 选择题错误不得分
@@ -91,6 +91,17 @@ def compute_score(data_source, solution_str, ground_truth, extra_info=None):
     
     total_score = format_reward*0.2 + answer_reward*0.8
     
+    # print("-"*30)
+    # print(f"""[DEBUG] compute_score:
+    #         solution_str={solution_str}
+    #         answer={solution_clean[0].lower()  if problem_type == "multichoice" else solution_clean}
+    #         ground_truth={ground_truth_clean.lower()}
+    #         problem_type={problem_type}
+    #         format_reward, answer_reward = {format_reward,answer_reward}
+    #         total_score={total_score}""")
+    # print("-"*30)
+    print(f"[reward_a2po.py]: format_reward, answer_reward = {format_reward,answer_reward}")
+    
     return total_score
 
 
@@ -117,7 +128,7 @@ def extract_last_answer_content(solution_str):
 # 示例用法
 if __name__ == "__main__":
     # 测试用例1：选择题类型
-    test_solution = "问题分析<think>这是思考过程</think><answer>最终答案是B</answer><code>最终答案</code><think>这是思考过程</think><answer>最终答案是C</answer>"
+    test_solution = "问题分析<think>这是思考过程</think><estimate>最终答案是B</estimate><code>最终答案</code><think>这是思考过程</think><answer>C. sad</answer>"
     test_ground_truth = "<answer>C</answer>"
     extra_info1 = {"problem_type": "multichoice"}
     score1 = compute_score("test", test_solution, test_ground_truth, extra_info1)
@@ -131,7 +142,7 @@ if __name__ == "__main__":
     print(f"测试2（数值题，完全正确）得分: {score2}")
     
     # 测试用例3：数值题类型（有误差）
-    test_solution3 = "<think>计算过程</think><answer>44.1</answer>"
+    test_solution3 = "<think>这是思考过程</think><code>最终答案</code><think>这是思考过程</think><estimate>最终答案是B</estimate><code>最终答案</code><think>这是思考过程</think><answer>45</answer>"
     test_ground_truth3 = "42"
     extra_info3 = {"problem_type": "numeric"}
     score3 = compute_score("test", test_solution3, test_ground_truth3, extra_info3)

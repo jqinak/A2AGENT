@@ -7,6 +7,7 @@ ulimit -n 65535
 export HF_HOME=/project/peilab/qjl/tmp
 export TMPDIR=/project/peilab/qjl/tmp
 export RAY_TMPDIR=/project/peilab/qjl/tmp
+export VERL_LOGGING_LEVEL=INFO
 
 cd /project/peilab/qjl/A2AGENT
 
@@ -25,10 +26,10 @@ MODELPATH=$PROJECT_DIR/a2agent/model/Qwen3-VL-4B-Instruct
 
 # python -m a2agent.data.a2agent_preprocess_rl
 
-
+# actor_rollout_ref.rollout.agent.num_workers
 nohup python -m a2agent.server.async_sandbox_server ALLOWED_PORT=$PORT > $PROJECT_DIR/a2agent/server/server.log 2>&1 &
 
-NAME=qwen3_4b_a2agent_test0
+NAME=qwen3_4b_a2agent_test3
 PROJECT=a2agent_async_rl
 
 
@@ -38,24 +39,25 @@ TOOL_CONFIG_PATH=$PROJECT_DIR/a2agent/tools/config/a2agent_tool_config.yaml
 
 python3 -m a2agent.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
-    data.train_batch_size=32 \
+    data.train_batch_size=16 \
     data.max_prompt_length=16384 \
     data.max_response_length=20000 \
     data.return_raw_chat=True \
     data.return_multi_modal_inputs=True \
-    data.filter_overlong_prompts=True \
+    data.filter_overlong_prompts=False \
     data.filter_overlong_prompts_workers=512 \
     data.truncation=left \
     data.image_key=images \
     data.video_key=videos \
     custom_reward_function.path=pkg://a2agent.reward.reward_a2po \
     custom_reward_function.name=compute_score \
+    actor_rollout_ref.rollout.mode="async" \
     actor_rollout_ref.rollout.multi_turn.enable=True \
     actor_rollout_ref.rollout.multi_turn.format=multimodalcode \
-    actor_rollout_ref.rollout.agent.default_agent_loop=tool_agent \
+    actor_rollout_ref.rollout.agent.default_agent_loop="tool_agent" \
     actor_rollout_ref.rollout.multi_turn.max_user_turns=5 \
     actor_rollout_ref.rollout.multi_turn.max_assistant_turns=5 \
-    actor_rollout_ref.rollout.multi_turn.max_parallel_calls=8 \
+    actor_rollout_ref.rollout.multi_turn.max_parallel_calls=32 \
     actor_rollout_ref.rollout.multi_turn.max_tool_response_length=1024 \
     actor_rollout_ref.rollout.multi_turn.tool_config_path="$TOOL_CONFIG_PATH" \
     actor_rollout_ref.model.path="$MODELPATH" \

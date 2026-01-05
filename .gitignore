@@ -3,6 +3,9 @@ a2agent/data/*/
 wandb
 qwen-vl-utils/outputs
 outputs
+scripts/*.log
+checkpoints/
+a2po.egg-info
 
 # Python
 __pycache__/

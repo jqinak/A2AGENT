@@ -7,8 +7,8 @@ tools:
     tool_schema:
       type: "function"
       function:
-        name: "calc_geo3k_reward"
-        description: "A tool for calculating the reward of geo3k. (1.0 if parsed answer is correct, 0.0 if parsed answer is incorrect or not correctly parsed)"
+        name: "multimodalcode"
+        description: ""
         parameters:
           type: "object"
           properties:
