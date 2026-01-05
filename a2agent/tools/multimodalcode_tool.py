@@ -86,7 +86,6 @@ class MultiModalCode_tool:
             }
         })
         """
-        super().__init__(config, tool_schema)
         self._instance_dict = {}
         # Worker and rate limiting configuration
         self.timeout = config.get("timeout", 60)
@@ -97,8 +96,8 @@ class MultiModalCode_tool:
         logger.info(f"Initialized multimodalcode_tool with config: {config}")
 
 
-    def get_openai_tool_schema(self) -> OpenAIFunctionToolSchema:
-        return self.tool_schema
+    # def get_openai_tool_schema(self) -> OpenAIFunctionToolSchema:
+    #     return self.tool_schema
 
     async def create(self, instance_id: str, parameters: dict[str, Any], **kwargs) -> tuple[str, ToolResponse]:
         """

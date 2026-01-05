@@ -167,8 +167,8 @@ class GptOssToolParser(ToolParser):
 class MultiModalCodeToolParser:
 
     def __init__(self, tokenizer) -> None:
-        super().__init__(tokenizer)
-
+        # super().__init__(tokenizer)
+        self.tokenizer = tokenizer
         self.tool_call_start_token: str = "<code>"
         self.tool_call_end_token: str = "</code>"
         self.tool_call_regex = regex.compile(r"<code>\s*```python\s*(.*?)```\s*</code>", regex.DOTALL)
