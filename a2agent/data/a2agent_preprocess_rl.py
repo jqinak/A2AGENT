@@ -52,12 +52,12 @@ if __name__ == "__main__":
     
     # Create train-test split indices
     dataset_size = len(dataset)
-    dataset_size = 200
+    # dataset_size = 200
     indices = list(range(dataset_size))
     import random
     random.shuffle(indices)
     
-    train_size = int(0.9 * dataset_size)
+    train_size = int(0.97 * dataset_size)
     train_indices = indices[:train_size]
     test_indices = indices[train_size:dataset_size]
     

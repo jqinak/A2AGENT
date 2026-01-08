@@ -91,11 +91,22 @@ def get_rope_index(
         vision_tokens = input_ids[vision_start_indices + 1]
         image_nums = (vision_tokens == image_token_id).sum()
         video_nums = (vision_tokens == video_token_id).sum()
+        # print(f"vision_tokens={vision_tokens}, image_token_id={image_token_id}, video_token_id={video_token_id}")
+        # print(f"image_nums = {image_nums}, video_nums = {video_nums}")
         input_tokens = input_ids.tolist()
         llm_pos_ids_list: list = []
         st = 0
         remain_images, remain_videos = image_nums, video_nums
+        # print(f"Starting loop for {image_nums + video_nums} visual tokens")
+        # print(f"image_grid_thw shape: {image_grid_thw.shape if image_grid_thw is not None else 'None'}")
+        # print(f"video_grid_thw shape: {video_grid_thw.shape if video_grid_thw is not None else 'None'}")
+        # print(f"second_per_grid_ts shape: {second_per_grid_ts.shape if second_per_grid_ts is not None else 'None'}")
+
         for _ in range(image_nums + video_nums):
+            # print(f"\nIteration {_}:")
+            # print(f"  st position: {st}")
+            # print(f"  remain_images: {remain_images}, remain_videos: {remain_videos}")
+            # print(f"  image_index: {image_index}, video_index: {video_index}")
             if image_token_id in input_tokens and remain_images > 0:
                 ed_image = input_tokens.index(image_token_id, st)
             else:
@@ -105,6 +116,7 @@ def get_rope_index(
             else:
                 ed_video = len(input_tokens) + 1
             if ed_image < ed_video:
+                # print(f"  Processing IMAGE at index {image_index}")
                 t, h, w = (
                     image_grid_thw[image_index][0],
                     image_grid_thw[image_index][1],
@@ -115,6 +127,7 @@ def get_rope_index(
                 remain_images -= 1
                 ed = ed_image
             else:
+                # print(f"  Processing VIDEO at index {video_index}")
                 t, h, w = (
                     video_grid_thw[video_index][0],
                     video_grid_thw[video_index][1],

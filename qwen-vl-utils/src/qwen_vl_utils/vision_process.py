@@ -138,6 +138,7 @@ def fetch_image(ele: Dict[str, Union[str, Image.Image]], image_patch_size: int =
             max_pixels=max_pixels,
         )
     image = image.resize((resized_width, resized_height))
+    logger.info(f"{ele}")
     return image
 
 
@@ -406,7 +407,7 @@ def fetch_video(ele: Dict[str, Any], image_patch_size: int = 14, return_video_sa
     VIDEO_FRAME_MIN_PIXELS = VIDEO_MIN_TOKEN_NUM * image_factor * image_factor
     VIDEO_FRAME_MAX_PIXELS = VIDEO_MAX_TOKEN_NUM * image_factor * image_factor
     # print("*"*30)
-    print(f"[qwen-vl-utils]: ele[\"video\"]={ele['video']}")
+    # print(f"[qwen-vl-utils]: ele[\"video\"]={ele['video']}")
     # print(f"ele type: {type(ele)}")
     # print(f"ele keys: {ele.keys()}")
     # print(f"ele['video'] type: {type(ele['video'])}")

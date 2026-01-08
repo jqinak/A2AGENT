@@ -29,7 +29,7 @@ from omegaconf import DictConfig, ListConfig
 from torch.utils.data import Dataset
 from transformers import PreTrainedTokenizer, ProcessorMixin
 
-from verl.models.transformers.qwen2_vl import get_rope_index
+from verl.models.transformers.qwen3_vl import get_rope_index
 from verl.utils import hf_tokenizer
 from verl.utils.chat_template import extract_system_prompt_and_generation
 from verl.utils.dataset.dataset_utils import DatasetPadMode
@@ -249,14 +249,19 @@ class MultiTurnSFTDataset(Dataset):
             for segment in segments:
                 if segment == "<image>":
                     image = process_image(images[image_offset], image_patch_size=self.image_patch_size)
+                    # print(f"image={image}")
                     content_list.append({"type": "image", "image": image})
                     image_offset += 1
+                    # print(f"image_offset={image_offset}")
                 elif segment == "<video>":
                     video = process_video(videos[video_offset], image_patch_size=self.image_patch_size)
+                    # print(f"video={video}")
                     content_list.append({"type": "video", "video": video})
                     video_offset += 1
+                    # print(f"video_offset={video_offset}")
                 else:
                     content_list.append({"type": "text", "text": segment})
+                    # print(f"segment={segment}")
             message["content"] = content_list
 
         assert image_offset == len(images), f"image_offset {image_offset} != len(images) {len(images)}"
@@ -313,6 +318,9 @@ class MultiTurnSFTDataset(Dataset):
             video_grid_thw = multi_modal_inputs.get("video_grid_thw", None)
             second_per_grid_ts = multi_modal_inputs.get("second_per_grid_ts", None)
 
+            # print(f"image_grid_thw: {image_grid_thw}")
+            # print(f"video_grid_thw: {video_grid_thw}, shape: {video_grid_thw.shape if video_grid_thw is not None else 'None'}")
+            # print(f"second_per_grid_ts: {second_per_grid_ts}, shape: {second_per_grid_ts.shape if second_per_grid_ts is not None else 'None'}")
             vision_position_ids = get_rope_index(
                 self.processor,
                 input_ids=input_ids,
@@ -392,7 +400,8 @@ class MultiTurnSFTDataset(Dataset):
         processor = self.processor if self.processor is not None else self.tokenizer
         apply_chat_template_kwargs = {**self.apply_chat_template_kwargs}
         if enable_thinking is not None:
-            apply_chat_template_kwargs["enable_thinking"] = enable_thinking
+            apply_chat_template_kwargs["enable_thinking"] = False
+        # logger.info(f"messages={messages}")
         inputs = processor.apply_chat_template(
             messages,
             tools=tools,

@@ -17,7 +17,7 @@ data:
   response_dict_keys: null
   # Multi-turn settings
   multiturn:
-    enable: false  # Set to true to use multi-turn dataset
+    enable: true # Set to true to use multi-turn dataset
     messages_key: messages  # Key for messages list in multi-turn mode
     tools_key: tools  # Key for tools list in multi-turn mode
     enable_thinking_key: enable_thinking  # Whether to enable thinking in multi-turn mode

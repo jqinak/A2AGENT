@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser.add_argument("--local_dataset_path", default=None, help="The local path to the raw dataset, if it exists.")
     parser.add_argument(
         "--local_save_dir",
-        default="~/data/pokemon-gpt4o-captions",
+        default="/home/jincai_guo/ICML2025_JIE/QJL/A2AGENT/a2agent/data/test_sft",
         help="The save directory for the preprocessed dataset.",
     )
 
@@ -69,7 +69,8 @@ if __name__ == "__main__":
 
     train_dataset.to_parquet(os.path.join(local_save_dir, "train.parquet"))
     test_dataset.to_parquet(os.path.join(local_save_dir, "test.parquet"))
-
+    # train_dataset.to_json(os.path.join(local_save_dir, "train.json"), orient="records", lines=True)
+    # test_dataset.to_json(os.path.join(local_save_dir, "test.json"), orient="records", lines=True)
     if hdfs_dir is not None:
         makedirs(hdfs_dir)
         copy(src=local_save_dir, dst=hdfs_dir)
